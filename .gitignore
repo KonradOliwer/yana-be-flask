@@ -1,0 +1,11 @@
+# Intelij IDEA
+.idea
+*.iml
+
+# Mac OS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cdowz]
+*$py.class
