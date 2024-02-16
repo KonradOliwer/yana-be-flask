@@ -16,6 +16,7 @@ sqlalchemy = "*"
 psycopg2-binary = "*"
 sqlalchemy-utils = "*"
 uuid = "*"
+pydantic = "*"
 
 [dev-packages]
 

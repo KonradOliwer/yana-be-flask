@@ -2,7 +2,7 @@
 
 Start clean database (requires installed docker)
 ```bash
-docker run --name postgres:alpine -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -p 5432:5432 --rm postgres
+docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -p 5432:5432 --rm postgres
 ```
 
 Run app

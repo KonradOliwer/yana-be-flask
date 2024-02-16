@@ -1,20 +1,20 @@
 import uuid
+from uuid import UUID
 
-from sqlalchemy import Column, Uuid, Text, String
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 
-from opennote.db import Base
+from opennote.database import db
 
 
-class Note(Base):
+class Note(db.Model):
     __tablename__ = 'notes'
-    id = Column(Uuid, primary_key=True)
-    name = Column(String(50), unique=False, nullable=False)
-    content = Column(Text(), unique=False, nullable=False)
+    id: Mapped[UUID] = mapped_column(primary_key=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    content: Mapped[str] = mapped_column(unique=False, nullable=False)
 
-    def __init__(self, entity_id=uuid.uuid1(), name=None, content=None):
-        self.id = entity_id
+    def __init__(self, id, name, content):
+        self.id = id or uuid.uuid1()
         self.name = name
         self.content = content
 
-    def __repr__(self):
-        return f'<Note {self.name!r} with id {self.id!r}>'
