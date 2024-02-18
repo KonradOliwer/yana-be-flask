@@ -1,12 +1,26 @@
 import uuid
+from enum import Enum
 
 from flask import Blueprint, jsonify, request, Response
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 
 from opennote.database import db
 from opennote.models import Note
 
 notes_bluprint = Blueprint('notes', __name__, url_prefix='/notes')
+
+
+class ErrorResponseCodes(Enum):
+    NOT_FOUND = "NOTE_NOT_FOUND"
+    BLANK_NAME = "NOTE_WITH_BLANK_NAME"
+    ALREADY_EXISTS = "NOTE_ALREADY_EXISTS"
+    NOT_MATCHING_URL_ID = "NOTE_ID_NOT_MATCHING_URL_ID"
+    WRITE_ERROR = "NOTE_WRITE_ERROR"
+
+
+class ErrorResponse(BaseModel):
+    code: ErrorResponseCodes
 
 
 class CreateNoteDTO(BaseModel):
@@ -29,15 +43,18 @@ def get_all_notes() -> tuple[Response, int]:
 
 @notes_bluprint.post('/')
 def create_note() -> tuple[Response, int]:
-    request_dto = CreateNoteDTO(**request.get_json())
-    new_note = Note(
-        id=uuid.uuid1(),
-        name=request_dto.name,
-        content=request_dto.content
-    )
-    db.session.add(new_note)
-    db.session.commit()
-    return jsonify(NoteDTO.from_note(new_note).__dict__), 201
+    try:
+        request_dto = CreateNoteDTO(**request.get_json())
+        new_note = Note(
+            id=uuid.uuid1(),
+            name=request_dto.name,
+            content=request_dto.content
+        )
+        db.session.add(new_note)
+        db.session.commit()
+        return jsonify(NoteDTO.from_note(new_note).__dict__), 201
+    except IntegrityError:
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.ALREADY_EXISTS).json()), 400
 
 
 @notes_bluprint.get('/<uuid:id>')
@@ -52,24 +69,31 @@ def get_note(id: uuid) -> tuple[Response, int]:
 def edit_note(id: uuid) -> tuple[Response, int]:
     request_dto = NoteDTO(**request.get_json())
     if request_dto.id != id:
-        return jsonify({'error': 'Id in URL does not match id in request body'}), 400
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_MATCHING_URL_ID).__dict__), 400
 
     persisted_note = db.session.query(Note).get(id)
     if persisted_note is not None:
+        if request_dto.name.strip() and request_dto.content.strip() is not "":
+            jsonify({'error': 'Note need to have not blank name'}), 400
         persisted_note.name = request_dto.name
         persisted_note.content = request_dto.content
         db.session.commit()
         return jsonify(NoteDTO.from_note(persisted_note).__dict__), 200
     else:
-        return jsonify({'error': 'Note not found'}), 404
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).__dict__), 404
 
 
 @notes_bluprint.delete('/<uuid:id>')
 def delete_note(id: uuid) -> tuple[Response, int]:
     note = db.session.query(Note).get(id)
     if note is None:
-        return jsonify({'error': 'Note not found'}), 404
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).__dict__), 404
 
     db.session.delete(note)
     db.session.commit()
     return Response(), 204
+
+
+@notes_bluprint.errorhandler(IntegrityError)
+def handle_exception(e) -> tuple[Response, int]:
+    return jsonify(ErrorResponse(code=ErrorResponseCodes.WRITE_ERROR).__dict__), 400
