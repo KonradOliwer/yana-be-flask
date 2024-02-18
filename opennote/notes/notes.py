@@ -38,6 +38,8 @@ class NoteDTO(CreateNoteDTO):
 
 @notes_bluprint.get('/')
 def get_all_notes() -> tuple[Response, int]:
+    # TODO fix list serialization
+    #  this is a hack and will not work if jsonify can't handle serialization of object ex. if model would use enums"
     return jsonify([NoteDTO.from_note(note).__dict__ for note in db.session.query(Note).all()]), 200
 
 
@@ -52,7 +54,7 @@ def create_note() -> tuple[Response, int]:
         )
         db.session.add(new_note)
         db.session.commit()
-        return jsonify(NoteDTO.from_note(new_note).__dict__), 201
+        return jsonify(NoteDTO.from_note(new_note).json()), 201
     except IntegrityError:
         return jsonify(ErrorResponse(code=ErrorResponseCodes.ALREADY_EXISTS).json()), 400
 
@@ -69,25 +71,25 @@ def get_note(id: uuid) -> tuple[Response, int]:
 def edit_note(id: uuid) -> tuple[Response, int]:
     request_dto = NoteDTO(**request.get_json())
     if request_dto.id != id:
-        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_MATCHING_URL_ID).__dict__), 400
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_MATCHING_URL_ID).json()), 400
 
     persisted_note = db.session.query(Note).get(id)
     if persisted_note is not None:
-        if request_dto.name.strip() and request_dto.content.strip() is not "":
+        if request_dto.name.strip() and request_dto.content.strip() != "":
             jsonify({'error': 'Note need to have not blank name'}), 400
         persisted_note.name = request_dto.name
         persisted_note.content = request_dto.content
         db.session.commit()
-        return jsonify(NoteDTO.from_note(persisted_note).__dict__), 200
+        return jsonify(NoteDTO.from_note(persisted_note).json()), 200
     else:
-        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).__dict__), 404
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).json()), 404
 
 
 @notes_bluprint.delete('/<uuid:id>')
 def delete_note(id: uuid) -> tuple[Response, int]:
     note = db.session.query(Note).get(id)
     if note is None:
-        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).__dict__), 404
+        return jsonify(ErrorResponse(code=ErrorResponseCodes.NOT_FOUND).json()), 404
 
     db.session.delete(note)
     db.session.commit()
@@ -96,4 +98,4 @@ def delete_note(id: uuid) -> tuple[Response, int]:
 
 @notes_bluprint.errorhandler(IntegrityError)
 def handle_exception(e) -> tuple[Response, int]:
-    return jsonify(ErrorResponse(code=ErrorResponseCodes.WRITE_ERROR).__dict__), 400
+    return jsonify(ErrorResponse(code=ErrorResponseCodes.WRITE_ERROR).json()), 400
