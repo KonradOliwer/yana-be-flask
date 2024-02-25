@@ -1,9 +1,9 @@
-import os
 import typing as t
 
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
+from sqlalchemy import URL
 
 from .database import init_db
 from .notes.notes import notes_bluprint
@@ -23,21 +23,8 @@ class PydanticJsonProvider(DefaultJSONProvider):
         return super().dumps(obj, **kwargs)
 
 
-def create_app(test_config=None):
+def create_app(test_config=None) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
-
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
-
-    # ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
 
     app.json_provider_class = PydanticJsonProvider
     app.json = PydanticJsonProvider(app)
@@ -46,6 +33,13 @@ def create_app(test_config=None):
 
     app.register_blueprint(notes_bluprint)
 
-    init_db(app)
+    if test_config:
+        init_db(app, test_config.db_url)
+    else:
+        init_db(app, URL.create(drivername="postgresql",
+                                host="localhost",
+                                database="opennote",
+                                username="user",
+                                password="password"))
 
     return app

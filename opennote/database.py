@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import URL
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy_utils import database_exists, create_database
 
@@ -11,12 +10,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 
-def init_db(app):
-    url = URL.create(drivername="postgresql",
-                     host="localhost",
-                     database="opennote",
-                     username="user",
-                     password="password")
+def init_db(app, url):
     app.config["SQLALCHEMY_DATABASE_URI"] = url
     if not database_exists(url):
         create_database(url)
