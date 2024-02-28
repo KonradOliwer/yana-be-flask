@@ -33,6 +33,9 @@ def create_app(test_config=None) -> Flask:
 
     app.register_blueprint(notes_bluprint)
 
+
+    app.config['SQLALCHEMY_ECHO'] = True
+
     if test_config:
         init_db(app, test_config.db_url)
     else:
