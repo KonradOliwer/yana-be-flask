@@ -15,12 +15,13 @@ class PydanticJsonProvider(DefaultJSONProvider):
     """
 
     def dumps(self, obj: t.Any, **kwargs: t.Any) -> str:
-        from pydantic import BaseModel
-        if isinstance(obj, BaseModel):
-            return obj.json()
-        if isinstance(obj, list) and all(isinstance(i, BaseModel) for i in obj):
-            return '[' + ', '.join(i.json() for i in obj) + ']'
-        return super().dumps(obj, **kwargs)
+        try:
+            return obj.model_dump_json()
+        except AttributeError:
+            try:
+                return '[' + ', '.join(i.model_dump_json() for i in obj) + ']'
+            except AttributeError:
+                return super().dumps(obj, **kwargs)
 
 
 def create_app(test_config=None) -> Flask:
@@ -32,9 +33,6 @@ def create_app(test_config=None) -> Flask:
     CORS(app)
 
     app.register_blueprint(notes_bluprint)
-
-
-    app.config['SQLALCHEMY_ECHO'] = True
 
     if test_config:
         init_db(app, test_config.db_url)

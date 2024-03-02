@@ -7,8 +7,8 @@ class TestConfig:
     db_url = "sqlite:///:memory:"
 
 
-@pytest.fixture()
-def app():
+@pytest.fixture
+def test_app():
     app = create_app(TestConfig())
     app.config.update({
         "TESTING": True,
