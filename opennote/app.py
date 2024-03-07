@@ -39,7 +39,7 @@ def create_app(test_config=None) -> Flask:
     else:
         init_db(app, URL.create(drivername="postgresql",
                                 host="localhost",
-                                database="opennote",
+                                database="yana",
                                 username="user",
                                 password="password"))
 

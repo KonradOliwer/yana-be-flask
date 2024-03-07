@@ -6,8 +6,10 @@
 ## TODO for production ready
 In case of productions configuration (like dp user and password) should at least land into environment variables. Alternatively there can be a configuration file.
 If we want higher level of security we might want to look for more sophisticated tools - like using AWS secret (if our infrastructure is on AWS).
-
 For higher security we also would like to compile code and don't keep original source code on the server.
+
+Building database from scratch is good thing for development but for production we should have some kind of migration system. 
+We could use [Alembic](https://alembic.sqlalchemy.org/en/latest/) for that.
 
 ## running in development
 Before first run install dependencies
@@ -24,5 +26,5 @@ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -
 Run with debug mode
 
 ```bash
-pipenv run flask --app opennote run --debug
+pipenv run flask --app opennote run --debug  -p 8000
 ```
