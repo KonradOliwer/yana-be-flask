@@ -28,3 +28,7 @@ Run with debug mode
 ```bash
 pipenv run flask --app opennote run --debug  -p 8000
 ```
+
+## runing test
+```bash
+pipenv run pytest
