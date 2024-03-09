@@ -130,3 +130,13 @@ def test_put_note_fails_on_different_id_then_in_url(test_app):
         put_data = json.loads(put_response.data)
         assert put_data.get('code') == "NOTE_VALIDATION_ERROR"
         assert put_data.get('message') == 'id: should match url id'
+
+
+def test_notes_post_for_existing_note_name(test_app):
+    with test_app.test_client() as client:
+        post_response = client.post('/notes/', json={"name": "name1", "content": "content1"})
+        assert post_response.status_code == 201
+        post_response = client.post('/notes/', json={"name": "name1", "content": "content2"})
+        assert post_response.status_code == 400
+        post_data = json.loads(post_response.data)
+        assert post_data.get('code') == "NOTE_ALREADY_EXISTS"
