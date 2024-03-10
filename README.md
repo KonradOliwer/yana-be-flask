@@ -1,7 +1,15 @@
+# Yet another notes app
+___
+This is learning project. So take everything with grain of salt and don't emulate things without a thought.
+
+This is [python](https://www.python.org/) + [Flask](https://flask.palletsprojects.com/) + [SQLAlchemy](https://www.sqlalchemy.org/) implementation of backend
+For more details about project read frontend [README.md](README.md)
+
+## Using app
 ## Requirements
-- python 3.7
-- pipenv
-- docker
+- [python 3.7](https://www.python.org/)
+- [pipenv](https://pypi.org/project/pipenv/)
+- [docker](https://www.docker.com/)
 
 ## TODO for production ready
 In case of productions configuration (like dp user and password) should at least land into environment variables. Alternatively there can be a configuration file.
@@ -11,24 +19,23 @@ For higher security we also would like to compile code and don't keep original s
 Building database from scratch is good thing for development but for production we should have some kind of migration system. 
 We could use [Alembic](https://alembic.sqlalchemy.org/en/latest/) for that.
 
-## running in development
-Before first run install dependencies
+## Running the app
+Install dependencies
 ```bash
 pipenv install
 ```
 
-Start database (requires installed docker) and drop it after closing
-
+Start db (this will drop DB on finishing process)
 ```bash
 docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -p 5432:5432 --rm postgres
 ```
 
 Run with debug mode
-
 ```bash
 pipenv run flask --app opennote run --debug  -p 8000
 ```
 
-## runing test
+### Running tests
 ```bash
 pipenv run pytest
+```
