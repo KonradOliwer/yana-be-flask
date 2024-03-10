@@ -3,7 +3,7 @@ ___
 This is learning project. So take everything with grain of salt and don't emulate things without a thought.
 
 This is [python](https://www.python.org/) + [Flask](https://flask.palletsprojects.com/) + [SQLAlchemy](https://www.sqlalchemy.org/) implementation of backend
-For more details about project read frontend [README.md](README.md)
+For more details about project read frontend [README.md](https://github.com/KonradOliwer/yana-fe-react/)
 
 ## Using app
 ## Requirements
