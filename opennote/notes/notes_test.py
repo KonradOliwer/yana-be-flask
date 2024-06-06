@@ -42,7 +42,7 @@ def test_notes_post_fails_on_adding_note_with_existing_name(test_app):
         assert post_data.get('message') is None
 
 
-def test_notes_putt_updates_note(test_app):
+def test_notes_put_updates_note(test_app):
     with test_app.test_client() as client:
         post_response = client.post('/notes/', json={"name": "name1", "content": "content1"})
         assert post_response.status_code == 201

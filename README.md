@@ -6,12 +6,12 @@ This is [python](https://www.python.org/) + [Flask](https://flask.palletsproject
 For more details about project read frontend [README.md](https://github.com/KonradOliwer/yana-fe-react/)
 
 ## Using app
-## Requirements
+### Requirements
 - [python 3.7](https://www.python.org/)
 - [pipenv](https://pypi.org/project/pipenv/)
 - [docker](https://www.docker.com/)
 
-## TODO for production ready
+### TODO for production ready
 In case of productions configuration (like dp user and password) should at least land into environment variables. Alternatively there can be a configuration file.
 If we want higher level of security we might want to look for more sophisticated tools - like using AWS secret (if our infrastructure is on AWS).
 For higher security we also would like to compile code and don't keep original source code on the server.
@@ -19,7 +19,7 @@ For higher security we also would like to compile code and don't keep original s
 Building database from scratch is good thing for development but for production we should have some kind of migration system. 
 We could use [Alembic](https://alembic.sqlalchemy.org/en/latest/) for that.
 
-## Running the app
+### Running the app
 Install dependencies
 ```bash
 pipenv install
