@@ -1,5 +1,6 @@
 import json
 import uuid
+import time
 
 
 def test_notes_get_returns_empty_list_when_no_notes_created(test_app):
@@ -140,3 +141,29 @@ def test_notes_post_for_existing_note_name(test_app):
         assert post_response.status_code == 400
         post_data = json.loads(post_response.data)
         assert post_data.get('code') == "NOTE_ALREADY_EXISTS"
+
+
+def test_notes_get_orders_by_last_modification_time(test_app):
+    with test_app.test_client() as client:
+        post_response1 = client.post('/notes/', json={"name": "name1", "content": "content1"})
+        assert post_response1.status_code == 201
+        time.sleep(1)  # for stability withSQLite - it has precision of seconds standard data time
+        post_response2 = client.post('/notes/', json={"name": "name2", "content": "content2"})
+        assert post_response2.status_code == 201
+        get_response = client.get('/notes/')
+        assert get_response.status_code == 200
+        get_data = json.loads(get_response.data)
+        assert get_data[0].get('name') == "name2"
+        assert get_data[1].get('name') == "name1"
+
+        time.sleep(1)  # for stability withSQLite - it has precision of seconds standard data time
+        put_response = client.put('/notes/' + post_response1.get_json()['id'],
+                                  json={"id": get_data[1].get('id'), "name": "name1", "content": "content3"})
+        assert put_response.status_code == 200
+        get_response = client.get('/notes/')
+        assert get_response.status_code == 200
+        get_data = json.loads(get_response.data)
+        assert isinstance(get_data, list)
+        assert len(get_data) == 2
+        assert get_data[0].get('name') == "name1"
+        assert get_data[1].get('name') == "name2"

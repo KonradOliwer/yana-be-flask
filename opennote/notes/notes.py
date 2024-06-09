@@ -4,6 +4,7 @@ from typing import Optional
 
 from flask import Blueprint, jsonify, request, Response
 from pydantic import BaseModel, Field, ValidationError
+from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 
 from opennote.database import db
@@ -49,7 +50,7 @@ def get_all_notes() -> tuple[Response, int]:
         notes = db.session.query(Note).filter(Note.name == name).all()
         return jsonify([NoteDTO.from_note(note) for note in notes]), 200
 
-    notes = db.session.query(Note).all()
+    notes = db.session.query(Note).order_by(desc(Note.updated_at)).all()
     return jsonify([NoteDTO.from_note(note) for note in notes]), 200
 
 
