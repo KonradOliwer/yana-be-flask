@@ -1,6 +1,6 @@
 import json
-import uuid
 import time
+import uuid
 
 
 def test_notes_get_returns_empty_list_when_no_notes_created(test_app):
@@ -103,7 +103,7 @@ def test_post_note_fails_on_too_long_name(test_app):
         post_response = client.post('/notes/', json={"name": "a" * 51, "content": "content1"})
         assert post_response.status_code == 400
         post_data = json.loads(post_response.data)
-        assert post_data.get('code') == "NOTE_VALIDATION_ERROR"
+        assert post_data.get('code') == "VALIDATION_ERROR"
         assert post_data.get('message') == "name: String should have at most 50 characters"
 
 
@@ -116,7 +116,7 @@ def test_put_note_fails_on_too_long_name(test_app):
                                   json={"id": note_id, "name": "a" * 51, "content": "updatedContent"})
         assert put_response.status_code == 400
         put_data = json.loads(put_response.data)
-        assert put_data.get('code') == "NOTE_VALIDATION_ERROR"
+        assert put_data.get('code') == "VALIDATION_ERROR"
         assert put_data.get('message') == "name: String should have at most 50 characters"
 
 
@@ -129,7 +129,7 @@ def test_put_note_fails_on_different_id_then_in_url(test_app):
                                   json={"id": uuid.uuid1(), "name": "updatedName", "content": "updatedContent"})
         assert put_response.status_code == 400
         put_data = json.loads(put_response.data)
-        assert put_data.get('code') == "NOTE_VALIDATION_ERROR"
+        assert put_data.get('code') == "VALIDATION_ERROR"
         assert put_data.get('message') == 'id: should match url id'
 
 

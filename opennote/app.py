@@ -3,8 +3,11 @@ import typing as t
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
+from pydantic import ValidationError
 from sqlalchemy import URL
+from sqlalchemy.exc import IntegrityError
 
+from common.error_handling import ClientError, handle_client_error, handle_validation_error, handle_integrity_error
 from .database import init_db
 from .notes.notes import notes_bluprint
 
@@ -33,6 +36,9 @@ def create_app(test_config=None) -> Flask:
     CORS(app)
 
     app.register_blueprint(notes_bluprint)
+    app.register_error_handler(ClientError, handle_client_error)
+    app.register_error_handler(ValidationError, handle_validation_error)
+    app.register_error_handler(IntegrityError, handle_integrity_error)
 
     if test_config:
         init_db(app, test_config.db_url)
