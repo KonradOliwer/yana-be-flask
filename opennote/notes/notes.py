@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import desc
 
 from common.error_handling import ClientError
-from common.utils import json_serialization
+from common.routing_decorators import json_serialization
 from opennote.database import db
 from opennote.db_model import Note
 
-notes_bluprint = Blueprint('notes', __name__, url_prefix='/notes')
+bluprint = Blueprint('notes', __name__, url_prefix='/notes')
 
 
 class NotesClintError(ClientError[Literal[
@@ -34,7 +34,7 @@ class NoteDTO(CreateNoteDTO):
         return cls(id=note.id, name=note.name, content=note.content)
 
 
-@notes_bluprint.get('/')
+@bluprint.get('/')
 @json_serialization
 def get_all_notes() -> tuple[list[NoteDTO], int]:
     name = request.args.get('name')
@@ -46,7 +46,7 @@ def get_all_notes() -> tuple[list[NoteDTO], int]:
     return [NoteDTO.from_note(note) for note in notes], 200
 
 
-@notes_bluprint.put('/<uuid:id>')
+@bluprint.put('/<uuid:id>')
 @json_serialization
 def update_note(id: uuid, body: NoteDTO) -> tuple[NoteDTO, int]:
     if id != body.id:
@@ -61,7 +61,7 @@ def update_note(id: uuid, body: NoteDTO) -> tuple[NoteDTO, int]:
     return NoteDTO.from_note(note), 200
 
 
-@notes_bluprint.post('/')
+@bluprint.post('/')
 @json_serialization
 def create_note(body: CreateNoteDTO) -> tuple[NoteDTO, int]:
     note_in_db = db.session.query(Note).filter_by(name=body.name).first()
@@ -78,7 +78,7 @@ def create_note(body: CreateNoteDTO) -> tuple[NoteDTO, int]:
         return NoteDTO.from_note(new_note), 201
 
 
-@notes_bluprint.delete('/<uuid:id>')
+@bluprint.delete('/<uuid:id>')
 @json_serialization
 def delete_note(id: uuid) -> tuple[Response, int]:
     note = db.session.query(Note).get(id)

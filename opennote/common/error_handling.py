@@ -3,7 +3,7 @@ from typing import Generic, TypeVar
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from common.utils import json_serialization
+from common.routing_decorators import json_serialization
 
 T = TypeVar('T', bound=str)
 
