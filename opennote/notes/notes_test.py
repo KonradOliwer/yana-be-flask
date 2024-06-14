@@ -3,6 +3,26 @@ import time
 import uuid
 
 
+def test_notes_get_require_auth(test_app_unauthorised):
+    with test_app_unauthorised.test_client() as client:
+        response = client.get('/notes/')
+        assert response.status_code == 401
+
+def test_notes_post_require_auth(test_app_unauthorised):
+    with test_app_unauthorised.test_client() as client:
+        response = client.post('/notes/')
+        assert response.status_code == 401
+
+def test_notes_put_require_auth(test_app_unauthorised):
+    with test_app_unauthorised.test_client() as client:
+        response = client.put('/notes/')
+        assert response.status_code == 401
+
+def test_notes_delete_require_auth(test_app_unauthorised):
+    with test_app_unauthorised.test_client() as client:
+        response = client.delete('/notes/')
+        assert response.status_code == 401
+
 def test_notes_get_returns_empty_list_when_no_notes_created(test_app):
     with test_app.test_client() as client:
         response = client.get('/notes/')
@@ -141,6 +161,7 @@ def test_notes_post_for_existing_note_name(test_app):
         assert post_response.status_code == 400
         post_data = json.loads(post_response.data)
         assert post_data.get('code') == "NOTE_ALREADY_EXISTS"
+        assert post_data.get('message') is None
 
 
 def test_notes_get_orders_by_last_modification_time(test_app):
