@@ -6,7 +6,7 @@ import uuid
 from base64 import b64encode, b64decode
 from datetime import datetime
 
-from env_variables_mock import JWT_SECRET
+from opennote.env_variables_mock import JWT_SECRET
 
 
 class InvalidJWT(Exception):

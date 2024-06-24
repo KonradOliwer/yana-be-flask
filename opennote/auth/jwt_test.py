@@ -1,6 +1,6 @@
 import datetime
 
-from auth.jwt import JWT
+from opennote.auth.jwt import JWT
 
 
 def test_encrypted_match_decrypted():

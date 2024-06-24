@@ -5,8 +5,8 @@ from flask import Blueprint, request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import desc
 
-from common.error_handling import ClientError
-from common.routing_decorators import json_serialization
+from opennote.common.error_handling import ClientError
+from opennote.common.routing_decorators import json_serialization
 from opennote.database import db
 from opennote.db_model import Note
 
@@ -51,7 +51,7 @@ def get_all_notes() -> tuple[list[NoteDTO], int]:
 def update_note(id: uuid, body: NoteDTO) -> tuple[NoteDTO, int]:
     if id != body.id:
         raise NotesClintError(code="VALIDATION_ERROR", message="id: should match url id", status_code=400)
-    note = db.session.query(Note).get(id)
+    note = db.session.get(Note, id)
     if note is None:
         raise NotesClintError(code="NOTE_NOT_FOUND", status_code=404)
 
