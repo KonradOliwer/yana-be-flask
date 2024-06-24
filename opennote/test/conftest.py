@@ -1,12 +1,12 @@
 import pytest
 
-from opennote import create_app
-from test_config import TestConfig
+from opennote.app import create_app
+from opennote.test_config import AppTestConfig
 
 
 @pytest.fixture
 def test_app():
-    app = create_app(TestConfig())
+    app = create_app(AppTestConfig())
     app.config.update({
         "TESTING": True
     })
@@ -15,7 +15,7 @@ def test_app():
 
 @pytest.fixture
 def test_app_unauthorised():
-    app = create_app(TestConfig(skip_auth=False))
+    app = create_app(AppTestConfig(skip_auth=False))
     app.config.update({
         "TESTING": True
     })

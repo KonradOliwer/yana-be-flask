@@ -2,7 +2,7 @@ from typing import List, Union
 
 from flask import request, Response
 
-from auth.jwt import JWT
+from opennote.auth.jwt import JWT
 
 
 def creat_auth_filter(bypass_prefixes: List[str]):
@@ -13,7 +13,7 @@ def creat_auth_filter(bypass_prefixes: List[str]):
         try:
             auth = request.headers["Authorization"]
             auth_type, token = auth.split(' ')
-            if auth_type is not "Bearer":
+            if auth_type != "Bearer":
                 raise Exception()
             try:
                 jwt = JWT.from_string(token)
@@ -23,6 +23,6 @@ def creat_auth_filter(bypass_prefixes: List[str]):
             except:
                 return Response(), 403
         except:
-            return Response(), 401
+            return Response(), 403
 
     return auth_filter

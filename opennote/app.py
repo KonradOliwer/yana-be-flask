@@ -7,13 +7,15 @@ from pydantic import ValidationError
 from sqlalchemy import URL
 from sqlalchemy.exc import IntegrityError
 
-from auth import auth
-from auth.auth_filter import creat_auth_filter
-from common.error_handling import ClientError, handle_client_error, handle_validation_error, handle_integrity_error
-from env_variables_mock import DB_USERNAME, DB_PASSWORD
-from notes import notes
-from test_config import TestConfig
+from opennote.auth import auth
+from opennote.auth.auth_filter import creat_auth_filter
+from opennote.common.error_handling import ClientError, handle_client_error, handle_validation_error, \
+    handle_integrity_error
+from opennote.notes import notes
+
+from .env_variables_mock import DB_USERNAME, DB_PASSWORD
 from .database import init_db
+from .test_config import AppTestConfig
 
 
 class PydanticJsonProvider(DefaultJSONProvider):
@@ -31,7 +33,7 @@ class PydanticJsonProvider(DefaultJSONProvider):
                 return super().dumps(obj, **kwargs)
 
 
-def create_app(test_config : TestConfig=None) -> Flask:
+def create_app(test_config: AppTestConfig = None) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
 
     app.json_provider_class = PydanticJsonProvider
@@ -40,7 +42,8 @@ def create_app(test_config : TestConfig=None) -> Flask:
     CORS(app)
 
     app.register_blueprint(notes.bluprint)
-    app.register_blueprint(auth.bluprint)
+    app.register_blueprint(auth.bluprint_auth)
+    app.register_blueprint(auth.bluprint_users)
 
     if not (test_config and test_config.skip_auth):
         app.before_request(creat_auth_filter(bypass_prefixes=[auth.URL_PREFIX]))

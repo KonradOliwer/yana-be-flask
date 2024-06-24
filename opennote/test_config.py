@@ -2,6 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass
-class TestConfig:
+class AppTestConfig:
     test_database_url: str = "sqlite:///:memory:"
     skip_auth: bool = True
