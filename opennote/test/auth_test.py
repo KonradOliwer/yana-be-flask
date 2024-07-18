@@ -20,3 +20,44 @@ def test_registered_user_can_log_in(test_app):
         assert login_response.status_code == 200
         login_body = json.loads(login_response.data)
         assert login_body['token'].startswith('Bearer ')
+
+
+def test_login_with_wrong_password(test_app):
+    with test_app.test_client() as client:
+        create_user_response = client.post('/users/', json={"username":"test name","password":"test password"})
+        assert create_user_response.status_code == 201
+
+        login_response = client.post('/access-token/', json={"username":"test name","password":"wrong password"})
+        assert login_response.status_code == 403
+
+
+def test_login_with_non_existing_user(test_app):
+    with test_app.test_client() as client:
+        login_response = client.post('/access-token/', json={"username":"non exi    sting user","password":"wrong password"})
+        assert login_response.status_code == 403
+
+
+def test_login_with_wrong_username(test_app):
+    with test_app.test_client() as client:
+        create_user_response = client.post('/users/', json={"username":"test name","password":"test password"})
+        assert create_user_response.status_code == 201
+
+        login_response = client.post('/access-token/', json={"username":"wrong username","password":"test password"})
+        assert login_response.status_code == 403
+
+
+def test_login_and_use_token(test_app):
+    with test_app.test_client() as client:
+        create_user_response = client.post('/users/', json={"username":"test name","password":"test password"})
+        assert create_user_response.status_code == 201
+
+        login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
+        assert login_response.status_code == 200
+        login_body = json.loads(login_response.data)
+        token = login_body['token']
+
+        response = client.get('/notes/', headers={"Authorization": token})
+        assert response.status_code == 200
+        body = json.loads(response.data)
+        assert body == []
+
