@@ -52,8 +52,10 @@ def register(body: RegisterRequest) -> tuple[Response, int]:
 @json_serialization
 def login(body: LoginRequest) -> tuple[Union[TokenResponse, Response], int]:
     user = db.session.query(User).filter_by(username=body.username).first()
+    if not user:
+        return Response(), 403
     if hash_password(body.password, user.password_salt) != user.password:
-        return Response(), 401
+        return Response(), 403
 
     token: JWT = JWT.create(issued_at=int(datetime.now().timestamp()), token_id=str(uuid.uuid4()))
     return TokenResponse(token='Bearer ' + token.serialize()), 200
