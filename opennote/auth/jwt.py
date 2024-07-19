@@ -9,6 +9,9 @@ from datetime import datetime
 from flask import current_app
 
 
+def timestamp_in_seconds() -> int:
+    return int(datetime.now().timestamp())
+
 class InvalidJWT(Exception):
     def __init__(self, message: str):
         self.message = message
@@ -56,7 +59,7 @@ class JWT:
 
     @property
     def is_expired(self) -> bool:
-        return datetime.now().timestamp() - self.issued_at < JWT.TIME_TO_LIVE
+        return timestamp_in_seconds() - self.issued_at > JWT.TIME_TO_LIVE
 
     @property
     def header(self) -> str:
@@ -68,7 +71,7 @@ class JWT:
     def payload(self) -> str:
         return JWT._object_to_json_b64({
             JWT._ISSUED_AT: self.issued_at,
-            JWT._TOKE_ID: self.token_id or uuid.uuid4()
+            JWT._TOKE_ID: str(self.token_id or uuid.uuid4())
         })
 
     @property
@@ -83,18 +86,9 @@ class JWT:
     def _dict_from_b64_json(cls, b64):
         return json.loads(b64decode(b64).decode(JWT.STRING_ENCODING))
 
-    @classmethod
-    def _signature_check(cls, header, payload, signature_to_compare) -> bool:
-        return b64encode(hmac.new(
-            key=bytes(current_app.config.get("JWT_SECRET"), JWT.STRING_ENCODING),
-            msg=bytes(f"${header}.${payload}", JWT.STRING_ENCODING),
-            digestmod=hashlib.sha256
-        ).digest()).decode(JWT.STRING_ENCODING) == signature_to_compare
-
     def _generate_signature(self) -> str:
-        self._signature = b64encode(hmac.new(
+        return b64encode(hmac.new(
             key=bytes(current_app.config.get("JWT_SECRET"), JWT.STRING_ENCODING),
             msg=bytes(f"{self.header}.{self.payload}", JWT.STRING_ENCODING),
             digestmod=hashlib.sha256
         ).digest()).decode(JWT.STRING_ENCODING)
-        return self._signature

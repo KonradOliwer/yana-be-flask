@@ -6,7 +6,7 @@ from typing import Union, Literal
 from flask import Blueprint, Response, Flask
 from pydantic import BaseModel
 
-from .jwt import JWT
+from .jwt import JWT, timestamp_in_seconds
 from opennote.common.error_handling import ClientError
 from opennote.common.routing_decorators import json_serialization
 from opennote.database import db
@@ -74,8 +74,8 @@ def login(body: LoginRequest) -> tuple[Union[TokenResponse, Response], int]:
     if hash_password(body.password, user.password_salt) != user.password:
         return Response(), 403
 
-    token: JWT = JWT.create(issued_at=int(datetime.now().timestamp()), token_id=str(uuid.uuid4()))
-    return TokenResponse(token='Bearer ' + token.serialize()), 200
+    token: JWT = JWT.create(issued_at=timestamp_in_seconds(), token_id=str(uuid.uuid4()))
+    return TokenResponse(token= token.serialize()), 201
 
 
 def hash_password(password, salt):

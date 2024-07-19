@@ -17,9 +17,9 @@ def test_registered_user_can_log_in(test_app):
         assert create_user_response.status_code == 201
 
         login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
-        assert login_response.status_code == 200
+        assert login_response.status_code == 201
         login_body = json.loads(login_response.data)
-        assert login_body['token'].startswith('Bearer ')
+        assert login_body['token'] is not None
 
 
 def test_login_with_wrong_password(test_app):
@@ -52,11 +52,11 @@ def test_login_and_use_token(test_app):
         assert create_user_response.status_code == 201
 
         login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
-        assert login_response.status_code == 200
+        assert login_response.status_code == 201
         login_body = json.loads(login_response.data)
         token = login_body['token']
 
-        response = client.get('/notes/', headers={"Authorization": token})
+        response = client.get('/notes/', headers={"Authorization": 'Bearer '+token})
         assert response.status_code == 200
         body = json.loads(response.data)
         assert body == []

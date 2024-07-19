@@ -3,26 +3,26 @@ import time
 import uuid
 
 
-def test_notes_get_require_auth(test_app_unauthorised):
-    with test_app_unauthorised.test_client() as client:
+def test_notes_get_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
         response = client.get('/notes/')
         assert response.status_code == 403
 
 
-def test_notes_post_require_auth(test_app_unauthorised):
-    with test_app_unauthorised.test_client() as client:
+def test_notes_post_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
         response = client.post('/notes/')
         assert response.status_code == 403
 
 
-def test_notes_put_require_auth(test_app_unauthorised):
-    with test_app_unauthorised.test_client() as client:
+def test_notes_put_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
         response = client.put('/notes/')
         assert response.status_code == 403
 
 
-def test_notes_delete_require_auth(test_app_unauthorised):
-    with test_app_unauthorised.test_client() as client:
+def test_notes_delete_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
         response = client.delete('/notes/')
         assert response.status_code == 403
 
