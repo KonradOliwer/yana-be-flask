@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Union, Literal
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, Flask
 from pydantic import BaseModel
 
 from .jwt import JWT
@@ -36,6 +36,19 @@ class AuthClientError(ClientError[Literal["VALIDATION_ERROR"]]):
     pass
 
 
+def init_starting_data(app: Flask):
+    username = "admin"
+    password = "admin"
+    with app.app_context():
+        existing_user = db.session.query(User).filter_by(username=username).first()
+        if not existing_user:
+            user_id = uuid.uuid4()
+            salt = str(uuid.uuid4()).replace("-", "")
+            hashed_password = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
+            db.session.add(User(id=user_id, username=username, password_salt=salt, password=hashed_password))
+            db.session.commit()
+
+
 @bluprint_users.post('/')
 @json_serialization
 def register(body: RegisterRequest) -> tuple[Response, int]:
@@ -51,6 +64,10 @@ def register(body: RegisterRequest) -> tuple[Response, int]:
 @bluprint_auth.post('/')
 @json_serialization
 def login(body: LoginRequest) -> tuple[Union[TokenResponse, Response], int]:
+    """
+
+    :rtype: object
+    """
     user = db.session.query(User).filter_by(username=body.username).first()
     if not user:
         return Response(), 403

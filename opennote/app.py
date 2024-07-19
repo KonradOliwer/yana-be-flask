@@ -63,4 +63,6 @@ def create_app(test_config: AppTestConfig = None) -> Flask:
 
     app.config['JWT_SECRET'] = os.environ.get("JWT_SECRET")
 
+    auth.init_starting_data(app)
+
     return app
