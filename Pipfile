@@ -17,6 +17,8 @@ psycopg2-binary = "*"
 sqlalchemy-utils = "*"
 uuid = "*"
 pydantic = "*"
+flask-migrate = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

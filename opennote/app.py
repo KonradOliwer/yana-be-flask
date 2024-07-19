@@ -1,4 +1,6 @@
+import os
 import typing as t
+from os import environ
 
 from flask import Flask
 from flask.json.provider import DefaultJSONProvider
@@ -12,8 +14,6 @@ from opennote.auth.auth_filter import creat_auth_filter
 from opennote.common.error_handling import ClientError, handle_client_error, handle_validation_error, \
     handle_integrity_error
 from opennote.notes import notes
-
-from .env_variables_mock import DB_USERNAME, DB_PASSWORD
 from .database import init_db
 from .test_config import AppTestConfig
 
@@ -58,7 +58,9 @@ def create_app(test_config: AppTestConfig = None) -> Flask:
         init_db(app, URL.create(drivername="postgresql",
                                 host="localhost",
                                 database="yana",
-                                username=DB_USERNAME,
-                                password=DB_PASSWORD))
+                                username=environ.get("DB_USERNAME"),
+                                password=environ.get("DB_PASSWORD")))
+
+    app.config['JWT_SECRET'] = os.environ.get("JWT_SECRET")
 
     return app
