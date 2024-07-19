@@ -23,6 +23,6 @@ def test_app():
 
 
 @pytest.fixture
-def test_app_unauthorised():
+def test_app_with_auth_filter():
     app = create_app(AppTestConfig(skip_auth=False))
     yield app
