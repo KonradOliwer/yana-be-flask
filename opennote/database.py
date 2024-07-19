@@ -1,4 +1,4 @@
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy_utils import database_exists, create_database
@@ -19,5 +19,7 @@ def init_db(app, url):
 
     migrate = Migrate(app, db)
     migrate.init_app(app, db)
+    with app.app_context():
+        upgrade()
 
     return db

@@ -3,6 +3,7 @@ import os
 import pytest
 from flask_migrate import upgrade
 
+from auth.auth import register, RegisterRequest, login, LoginRequest
 from opennote.app import create_app
 from opennote.test_config import AppTestConfig
 
@@ -18,14 +19,10 @@ def setup():
 @pytest.fixture
 def test_app():
     app = create_app(AppTestConfig())
-    with app.app_context():
-        upgrade()
     yield app
 
 
 @pytest.fixture
 def test_app_unauthorised():
     app = create_app(AppTestConfig(skip_auth=False))
-    with app.app_context():
-        upgrade()
     yield app
