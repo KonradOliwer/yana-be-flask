@@ -32,10 +32,13 @@ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=user -
 
 Run with debug mode
 ```bash
-pipenv run flask --app opennote run --debug  -p 8000
+pipenv run flask run --debug  -p 8000
 ```
 
 ### Running tests
 ```bash
 pipenv run pytest
 ```
+
+#### Note about running in IDEA
+Change script and  working directory to root directory'
