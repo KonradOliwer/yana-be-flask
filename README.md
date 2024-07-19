@@ -3,6 +3,7 @@ ___
 This is learning project. So take everything with grain of salt and don't emulate things without a thought.
 
 This is [python](https://www.python.org/) + [Flask](https://flask.palletsprojects.com/) + [SQLAlchemy](https://www.sqlalchemy.org/) implementation of backend
+This version is currently not supported by frontend. Use tag [v0.1.0](https://github.com/KonradOliwer/yana-be-flask/tree/v0.1.0) to see compatible version.
 For more details about project read frontend [README.md](https://github.com/KonradOliwer/yana-fe-react/)
 
 ## Using app
