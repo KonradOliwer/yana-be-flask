@@ -1,5 +1,6 @@
 from typing import Generic, TypeVar
 
+from flask import Flask
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -36,3 +37,9 @@ def handle_validation_error(error: ValidationError) -> tuple[ErrorResponse, int]
 @json_serialization
 def handle_integrity_error(e: IntegrityError) -> tuple[ErrorResponse, int]:
     return ErrorResponse(code="WRITE_ERROR"), 400
+
+
+def register_error_handlers(app: Flask):
+    app.register_error_handler(ClientError, handle_client_error)
+    app.register_error_handler(ValidationError, handle_validation_error)
+    app.register_error_handler(IntegrityError, handle_integrity_error)
