@@ -47,9 +47,15 @@ def test_auth_filter_invalid_tempered_token(test_app_with_auth_filter):
         old_token_issued_at = timestamp_in_seconds()
         old_token = JWT.create(issued_at=old_token_issued_at, token_id=uuid4(), user_id=uuid4()).serialize()
         jwt = JWT.from_string(old_token)
-        jwt.expire_at = jwt.expire_at +1
+        jwt.expire_at = jwt.expire_at + 1
         new_token = jwt.serialize()
         with test_app_with_auth_filter.test_client() as client:
             client.set_cookie(key='Authorization', value=f'Bearer {new_token}')
             response = client.get('/notes/')
             assert response.status_code == 403
+
+
+def test_auth_filter_do_not_check_option_request(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
+        response = client.options('/notes/')
+        assert response.status_code == 200

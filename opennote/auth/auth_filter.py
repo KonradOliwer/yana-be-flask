@@ -10,6 +10,8 @@ def creat_auth_filter(bypass_prefixes: List[str]):
         for start_with in bypass_prefixes:
             if request.path.startswith(start_with):
                 return
+        if request.method == "OPTIONS":
+            return
         try:
             auth_cookie = request.cookies.get('Authorization')
             auth_type, token = auth_cookie.split(' ')

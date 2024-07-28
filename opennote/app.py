@@ -2,7 +2,7 @@ import os
 import typing as t
 from os import environ
 
-from flask import Flask
+from flask import Flask, request
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from sqlalchemy import URL
