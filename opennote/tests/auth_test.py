@@ -1,4 +1,5 @@
 import json
+import re
 
 
 def test_register_requires_unique_username(test_app):
@@ -18,8 +19,11 @@ def test_registered_user_can_log_in(test_app):
 
         login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
         assert login_response.status_code == 201
-        login_body = json.loads(login_response.data)
-        assert login_body['token'] is not None
+        assert json.loads(login_response.data)['token_expire_at'] is not None
+
+        set_cookie_header = login_response.headers['Set-Cookie']
+        pattern = r"Authorization=Bearer [\S]+\.[\S]+\.[\S]+; HttpOnly; SameSite=Strict; Secure; Path=\/; Max-Age=1800"
+        assert re.match(pattern, set_cookie_header) is not None, f"Set-Cookie doesn't included correct auth token, instead it contains: {set_cookie_header}"
 
 
 def test_login_with_wrong_password(test_app):
@@ -53,11 +57,34 @@ def test_login_and_use_token(test_app):
 
         login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
         assert login_response.status_code == 201
-        login_body = json.loads(login_response.data)
-        token = login_body['token']
 
-        response = client.get('/notes/', headers={"Authorization": 'Bearer '+token})
+        response = client.get('/notes/')
         assert response.status_code == 200
         body = json.loads(response.data)
         assert body == []
 
+
+def test_whoami_happy_path(test_app):
+    with test_app.test_client() as client:
+        create_user_response = client.post('/users/', json={"username":"test name","password":"test password"})
+        assert create_user_response.status_code == 201
+
+        login_response = client.post('/access-token/', json={"username":"test name","password":"test password"})
+        assert login_response.status_code == 201
+
+        response = client.get('/users/whoami')
+        assert response.status_code == 200
+        body = json.loads(response.data)
+        assert body['username'] == "test name"
+
+
+def test_whoami_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
+        response = client.get('/users/whoami')
+        assert response.status_code == 403
+
+
+def test_create_user_require_auth(test_app_with_auth_filter):
+    with test_app_with_auth_filter.test_client() as client:
+        response = client.post('/users/', json={"username":"test name","password":"test password"})
+        assert response.status_code == 403

@@ -1,9 +1,7 @@
 import os
 
 import pytest
-from flask_migrate import upgrade
 
-from auth.auth import register, RegisterRequest, login, LoginRequest
 from opennote.app import create_app
 from opennote.test_config import AppTestConfig
 
@@ -14,6 +12,7 @@ def setup():
     os.environ["DB_PASSWORD"] = "password"
     os.environ["DB_USERNAME"] = "user"
     os.environ["JWT_SECRET"] = "secret"
+    os.environ["ORIGINS"] = "*"
 
 
 @pytest.fixture

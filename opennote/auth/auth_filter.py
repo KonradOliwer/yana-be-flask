@@ -11,8 +11,8 @@ def creat_auth_filter(bypass_prefixes: List[str]):
             if request.path.startswith(start_with):
                 return
         try:
-            auth = request.headers["Authorization"]
-            auth_type, token = auth.split(' ')
+            auth_cookie = request.cookies.get('Authorization')
+            auth_type, token = auth_cookie.split(' ')
             if auth_type != "Bearer":
                 raise Exception()
             try:

@@ -36,7 +36,7 @@ def create_app(test_config: AppTestConfig = None) -> Flask:
     app.json_provider_class = PydanticJsonProvider
     app.json = PydanticJsonProvider(app)
 
-    CORS(app)
+    CORS(app, supports_credentials=True, origins=os.environ.get("ORIGINS"))
 
     app.register_blueprint(notes.bluprint)
     app.register_blueprint(auth.bluprint_auth)
