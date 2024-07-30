@@ -17,9 +17,6 @@ In case of productions configuration (like dp user and password) should at least
 If we want higher level of security we might want to look for more sophisticated tools - like using AWS secret (if our infrastructure is on AWS).
 For higher security we also would like to compile code and don't keep original source code on the server.
 
-Building database from scratch is good thing for development but for production we should have some kind of migration system. 
-We could use [Alembic](https://alembic.sqlalchemy.org/en/latest/) for that.
-
 ### Running the app
 Install dependencies
 ```bash
@@ -41,5 +38,13 @@ pipenv run flask run --debug  -p 8000
 pipenv run pytest
 ```
 
-#### Note about running in IDEA
+## Development notes
+### Migrations
+For automatic generation of next migration use
+```bash
+pipenv run flask db migrate -m "<migration_name>"
+```
+Make sure to review migration code before commiting.
+
+### Note about running in IDEA
 Change script and  working directory to root directory'

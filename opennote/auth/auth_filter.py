@@ -2,7 +2,11 @@ from typing import List
 
 from flask import request, Response
 
-from opennote.auth.jwt import JWT
+from opennote.auth.jwt import JWT, InvalidJWT
+
+
+class AuthException(Exception):
+    pass
 
 
 def creat_auth_filter(bypass_prefixes: List[str]):
@@ -13,18 +17,27 @@ def creat_auth_filter(bypass_prefixes: List[str]):
         if request.method == "OPTIONS":
             return
         try:
-            auth_cookie = request.cookies.get('Authorization')
-            auth_type, token = auth_cookie.split(' ')
-            if auth_type != "Bearer":
-                raise Exception()
-            try:
-                jwt = JWT.from_string(token)
-                jwt.validate()
-                if jwt.is_expired:
-                    raise Exception()
-            except:
-                return Response(), 403
-        except:
+            jwt = extract_jwt_from_request()
+            jwt.validate()
+            if jwt.is_expired:
+                raise AuthException()
+        except (AuthException, InvalidJWT):
             return Response(), 403
 
     return auth_filter
+
+
+def extract_jwt_from_request() -> JWT:
+    try:
+        auth_cookie = request.cookies.get('Authorization')
+        auth_type, token = auth_cookie.split(' ')
+    except (AttributeError, ValueError):
+        raise AuthException()
+
+    if auth_type != "Bearer":
+        raise AuthException()
+
+    try:
+        return JWT.from_string(token)
+    except InvalidJWT:
+        raise AuthException()

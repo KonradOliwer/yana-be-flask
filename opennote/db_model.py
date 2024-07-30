@@ -33,3 +33,17 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(unique=False, nullable=False)
     password_salt: Mapped[str] = mapped_column(unique=True, nullable=False)
+
+
+class RefreshToken(Base):
+    __tablename__ = 'refresh_tokens'
+    user_id: Mapped[UUID] = mapped_column(nullable=False)
+    expire_at: Mapped[int] = mapped_column(nullable=False) # Unix timestamp
+    active: Mapped[bool] = mapped_column(nullable=False, default=True)
+
+    def __init__(self, user_id: UUID, expire_at: int, active: bool = True):
+        self.id = uuid.uuid4()
+        self.user_id = user_id
+        self.expire_at = expire_at
+        self.active = active
+

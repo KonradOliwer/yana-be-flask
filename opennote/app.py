@@ -43,7 +43,7 @@ def create_app(test_config: AppTestConfig = None) -> Flask:
     app.register_blueprint(auth.bluprint_users)
 
     if not (test_config and test_config.skip_auth):
-        app.before_request(creat_auth_filter(bypass_prefixes=[auth.URL_PREFIX]))
+        app.before_request(creat_auth_filter(bypass_prefixes=[auth.LOGIN_ROUTE]))
 
     register_error_handlers(app)
 

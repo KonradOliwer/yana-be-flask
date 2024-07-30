@@ -4,7 +4,7 @@ from flask import Flask
 from pydantic import BaseModel, ValidationError
 from sqlalchemy.exc import IntegrityError
 
-from opennote.common.routing_decorators import json_serialization
+from opennote.common.routing_decorators import endpoint
 
 T = TypeVar('T', bound=str)
 
@@ -21,20 +21,20 @@ class ErrorResponse(BaseModel):
     code: str
 
 
-@json_serialization
+@endpoint
 def handle_client_error(e: ClientError) -> tuple[ErrorResponse, int]:
     if e.message:
         return ErrorResponse(code=e.code, message=e.message), e.status_code
     return ErrorResponse(code=e.code), e.status_code
 
 
-@json_serialization
+@endpoint
 def handle_validation_error(error: ValidationError) -> tuple[ErrorResponse, int]:
     message = '\n'.join(f"{', '.join(e['loc'])}: {e['msg']}" for e in error.errors())
     return ErrorResponse(code="VALIDATION_ERROR", message=message), 400
 
 
-@json_serialization
+@endpoint
 def handle_integrity_error(e: IntegrityError) -> tuple[ErrorResponse, int]:
     return ErrorResponse(code="WRITE_ERROR"), 400
 

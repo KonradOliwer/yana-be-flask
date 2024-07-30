@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import desc
 
 from opennote.common.error_handling import ClientError
-from opennote.common.routing_decorators import json_serialization
+from opennote.common.routing_decorators import endpoint
 from opennote.database import db
 from opennote.db_model import Note
 
@@ -35,7 +35,7 @@ class NoteDTO(CreateNoteDTO):
 
 
 @bluprint.get('/')
-@json_serialization
+@endpoint
 def get_all_notes() -> tuple[list[NoteDTO], int]:
     name = request.args.get('name')
     if name is not None:
@@ -47,7 +47,7 @@ def get_all_notes() -> tuple[list[NoteDTO], int]:
 
 
 @bluprint.put('/<uuid:id>')
-@json_serialization
+@endpoint
 def update_note(id: uuid, body: NoteDTO) -> tuple[NoteDTO, int]:
     if id != body.id:
         raise NotesClintError(code="VALIDATION_ERROR", message="id: should match url id", status_code=400)
@@ -62,7 +62,7 @@ def update_note(id: uuid, body: NoteDTO) -> tuple[NoteDTO, int]:
 
 
 @bluprint.post('/')
-@json_serialization
+@endpoint
 def create_note(body: CreateNoteDTO) -> tuple[NoteDTO, int]:
     note_in_db = db.session.query(Note).filter_by(name=body.name).first()
     if note_in_db:
@@ -79,7 +79,7 @@ def create_note(body: CreateNoteDTO) -> tuple[NoteDTO, int]:
 
 
 @bluprint.delete('/<uuid:id>')
-@json_serialization
+@endpoint
 def delete_note(id: uuid) -> tuple[Response, int]:
     note = db.session.query(Note).get(id)
     if note is None:

@@ -5,30 +5,33 @@ from flask import Blueprint, Response, Flask, jsonify, request
 from pydantic import BaseModel
 from uuid import uuid4, UUID
 
+from opennote.common.data_time_utils import timestamp_in_seconds
 from opennote.common.error_handling import ClientError
-from opennote.common.routing_decorators import json_serialization
+from opennote.common.routing_decorators import endpoint
 from opennote.database import db
-from opennote.db_model import User
-from .jwt import JWT, timestamp_in_seconds
+from opennote.db_model import User, RefreshToken
+from .jwt import JWT
 
-URL_PREFIX = '/access-token'
+ACCESS_TOKEN_PREFIX = '/access-token'
+LOGIN_ROUTE_POSTFIX = '/create'
+LOGIN_ROUTE = ACCESS_TOKEN_PREFIX + LOGIN_ROUTE_POSTFIX
 
-bluprint_auth = Blueprint('access_token', __name__, url_prefix=URL_PREFIX)
+bluprint_auth = Blueprint('access_token', __name__, url_prefix=ACCESS_TOKEN_PREFIX)
 bluprint_users = Blueprint('users', __name__, url_prefix='/users')
 
 
-class LoginRequest(BaseModel):
+class AuthRequest(BaseModel):
     username: str
     password: str
+
+
+class AuthResponse(BaseModel):
+    token_expire_at: int
 
 
 class RegisterRequest(BaseModel):
     username: str
     password: str
-
-
-class LoginResponse(BaseModel):
-    token_expire_at: int
 
 
 class UserResponse(BaseModel):
@@ -53,7 +56,7 @@ def init_starting_data(app: Flask):
 
 
 @bluprint_users.post('/')
-@json_serialization
+@endpoint
 def register(body: RegisterRequest) -> tuple[Response, int]:
     salt = create_salt()
     if db.session.query(User).filter_by(username=body.username).first():
@@ -65,28 +68,58 @@ def register(body: RegisterRequest) -> tuple[Response, int]:
 
 
 @bluprint_users.get('/whoami')
-@json_serialization
-def whoami() -> tuple[UserResponse, int]:
-    _, token = request.cookies.get('Authorization').split(' ')
-    jwt = JWT.from_string(token)
+@endpoint
+def whoami(jwt: JWT) -> tuple[UserResponse, int]:
     user = db.session.query(User).get(jwt.user_id)
     return UserResponse(username=user.username), 200
 
 
-@bluprint_auth.post('/')
-@json_serialization
-def login(body: LoginRequest) -> tuple[Union[LoginResponse, Response], int]:
+@bluprint_auth.post(LOGIN_ROUTE_POSTFIX)
+@endpoint
+def create_token(body: AuthRequest) -> tuple[Union[AuthResponse, Response], int]:
+    """
+
+    :rtype: object
+    """
     user = db.session.query(User).filter_by(username=body.username).first()
     if not user:
         return Response(), 403
     if hash_password(body.password, user.password_salt) != user.password:
         return Response(), 403
 
-    token = JWT.create(issued_at=timestamp_in_seconds(), token_id=str(uuid4()), user_id=user.id)
-    body = LoginResponse(token_expire_at=token.expire_at)
+    token = create_new_token_with_refresh_token_persisted(user.id)
+    response = create_auth_response(token)
+    db.session.commit()
+    return response, 201
+
+
+@bluprint_auth.post('/refresh')
+@endpoint
+def preform_token_refresh(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]:
+    refresh_token = db.session.query(RefreshToken).get(jwt.refresh_token)
+    if refresh_token.expire_at < timestamp_in_seconds() or not refresh_token.active:
+        return Response(), 403
+    refresh_token.active = False
+
+    token = create_new_token_with_refresh_token_persisted(user_id=jwt.user_id)
+    response = create_auth_response(token)
+    db.session.commit()
+    return response, 201
+
+
+def create_auth_response(token):
+    body = AuthResponse(token_expire_at=token.expire_at)
     response = jsonify(body)
     response.headers.add('Set-Cookie', f"Authorization=Bearer {token.serialize()}; HttpOnly; SameSite=Strict; Secure; Path=/; Max-Age={JWT.TIME_TO_LIVE}")
-    return response, 201
+    return response
+
+
+def create_new_token_with_refresh_token_persisted(user_id: UUID) -> JWT:
+    refresh_token = RefreshToken(user_id=user_id, expire_at=timestamp_in_seconds() + JWT.REFRESH_TOKEN_TTL)
+    db.session.add(refresh_token)
+
+    token = JWT.create(issued_at=timestamp_in_seconds(), refresh_token=refresh_token.id, user_id=user_id)
+    return token
 
 
 def create_salt():
