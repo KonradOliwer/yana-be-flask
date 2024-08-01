@@ -6,7 +6,7 @@ from common.data_time_utils import timestamp_in_seconds
 
 def test_auth_filter_happy_path(test_app_with_auth_filter):
     with test_app_with_auth_filter.test_client() as client:
-        response = client.post('/access-token/create', json={"username": "admin", "password": "admin"})
+        response = client.post('/access-token/login', json={"username": "admin", "password": "admin"})
         assert response.status_code == 201
         response = client.get('/notes/')
         assert response.status_code == 200

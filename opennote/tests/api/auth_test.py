@@ -35,7 +35,7 @@ def test_registered_user_can_log_in(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "test name", "password": "test password"})
+        login_response = client.post('/access-token/login', json={"username": "test name", "password": "test password"})
         assert login_response.status_code == 201
         assert json.loads(login_response.data)['token_expire_at'] is not None
 
@@ -49,13 +49,13 @@ def test_login_with_wrong_password(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "test name", "password": "wrong password"})
+        login_response = client.post('/access-token/login', json={"username": "test name", "password": "wrong password"})
         assert login_response.status_code == 403
 
 
 def test_login_with_non_existing_user(test_app):
     with test_app.test_client() as client:
-        login_response = client.post('/access-token/create', json={"username": "non existing user", "password": "wrong password"})
+        login_response = client.post('/access-token/login', json={"username": "non existing user", "password": "wrong password"})
         assert login_response.status_code == 403
 
 
@@ -64,7 +64,7 @@ def test_login_with_wrong_username(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "wrong username", "password": "test password"})
+        login_response = client.post('/access-token/login', json={"username": "wrong username", "password": "test password"})
         assert login_response.status_code == 403
 
 
@@ -73,7 +73,7 @@ def test_login_and_use_token(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "test name", "password": "test password"})
+        login_response = client.post('/access-token/login', json={"username": "test name", "password": "test password"})
         assert login_response.status_code == 201
 
         response = client.get('/notes/')
@@ -87,7 +87,7 @@ def test_whoami_happy_path(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "test name", "password": "test password"})
+        login_response = client.post('/access-token/login', json={"username": "test name", "password": "test password"})
         assert login_response.status_code == 201
 
         response = client.get('/users/whoami')
@@ -101,7 +101,7 @@ def test_refresh_token_creates_new_token(test_app):
         create_user_response = client.post('/users/', json={"username": "test name", "password": "test password"})
         assert create_user_response.status_code == 201
 
-        login_response = client.post('/access-token/create', json={"username": "test name", "password": "test password"})
+        login_response = client.post('/access-token/login', json={"username": "test name", "password": "test password"})
         login_body = json.loads(login_response.data)
         assert login_response.status_code == 201
 

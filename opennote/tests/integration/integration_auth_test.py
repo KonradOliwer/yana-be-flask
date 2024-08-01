@@ -11,7 +11,7 @@ def test_login_creates_refresh_token(test_app):
         response = client.post('/users/', json={"username": "test", "password": "test"})
         assert response.status_code == 201
 
-        response = client.post('/access-token/create', method='POST', json={"username": "test", "password": "test"})
+        response = client.post('/access-token/login', method='POST', json={"username": "test", "password": "test"})
         assert response.status_code == 201
 
         set_cookie_header = response.headers['Set-Cookie']
@@ -31,7 +31,7 @@ def test_preform_token_refresh_creates_new_refresh_token(test_app):
     with test_app.test_client() as client:
         response = client.post('/users/', json={"username": "test", "password": "test"})
         assert response.status_code == 201
-        response = client.post('/access-token/create', method='POST', json={"username": "test", "password": "test"})
+        response = client.post('/access-token/login', method='POST', json={"username": "test", "password": "test"})
         assert response.status_code == 201
 
         response = client.post('/access-token/refresh', method='POST', json={"username": "test", "password": "test"})

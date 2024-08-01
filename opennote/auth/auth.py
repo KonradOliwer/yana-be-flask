@@ -5,7 +5,7 @@ from flask import Blueprint, Response, Flask, jsonify, request
 from pydantic import BaseModel
 from uuid import uuid4, UUID
 
-from opennote.common.data_time_utils import timestamp_in_seconds
+from opennote.common.data_time_utils import timestamp_in_seconds, timestamp_to_cookie_expires_format, PAST_TIME_EXPIRE_AT_COOKIE_VALUE
 from opennote.common.error_handling import ClientError
 from opennote.common.routing_decorators import endpoint
 from opennote.database import db
@@ -13,7 +13,7 @@ from opennote.db_model import User, RefreshToken
 from .jwt import JWT
 
 ACCESS_TOKEN_PREFIX = '/access-token'
-LOGIN_ROUTE_POSTFIX = '/create'
+LOGIN_ROUTE_POSTFIX = '/login'
 LOGIN_ROUTE = ACCESS_TOKEN_PREFIX + LOGIN_ROUTE_POSTFIX
 
 bluprint_auth = Blueprint('access_token', __name__, url_prefix=ACCESS_TOKEN_PREFIX)
@@ -107,10 +107,22 @@ def preform_token_refresh(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]
     return response, 201
 
 
+@bluprint_auth.post('/logout')
+@endpoint
+def delete_token(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]:
+    refresh_token = db.session.query(RefreshToken).get(jwt.refresh_token)
+    refresh_token.active = False
+
+    response = Response()
+    response.headers.add('Set-Cookie', f"Authorization=deleted; HttpOnly; SameSite=Strict; Secure; Path=/; Expires={PAST_TIME_EXPIRE_AT_COOKIE_VALUE}")
+    return response, 204
+
+
 def create_auth_response(token):
     body = AuthResponse(token_expire_at=token.expire_at)
     response = jsonify(body)
-    response.headers.add('Set-Cookie', f"Authorization=Bearer {token.serialize()}; HttpOnly; SameSite=Strict; Secure; Path=/; Max-Age={JWT.TIME_TO_LIVE}")
+    response.headers.add('Set-Cookie',
+                         f"Authorization=Bearer {token.serialize()}; HttpOnly; SameSite=Strict; Secure; Path=/; Expires={timestamp_to_cookie_expires_format(token.expire_at)}")
     return response
 
 
