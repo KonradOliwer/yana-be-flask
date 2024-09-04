@@ -1,7 +1,7 @@
 from datetime import datetime
 
+PAST_TIME_EXPIRE_AT_COOKIE_VALUE = "Thu, 01 Jan 1970 00:00:00 GMT"
 
-PAST_TIME_EXPIRE_AT_COOKIE_VALUE =  "Thu, 01 Jan 1970 00:00:00 GMT"
 
 def timestamp_in_seconds() -> int:
     return int(datetime.now().timestamp())

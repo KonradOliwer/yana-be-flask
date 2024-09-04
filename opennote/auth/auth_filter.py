@@ -20,8 +20,8 @@ def creat_auth_filter(bypass_prefixes: List[str]):
             jwt = extract_jwt_from_request()
             jwt.validate()
             if jwt.is_expired:
-                raise AuthException()
-        except (AuthException, InvalidJWT):
+                raise AuthException("Expired token")
+        except (AuthException, InvalidJWT) as error:
             return Response(), 403
 
     return auth_filter
@@ -32,12 +32,12 @@ def extract_jwt_from_request() -> JWT:
         auth_cookie = request.cookies.get('Authorization')
         auth_type, token = auth_cookie.split(' ')
     except (AttributeError, ValueError):
-        raise AuthException()
+        raise AuthException("Invalid auth header")
 
     if auth_type != "Bearer":
-        raise AuthException()
+        raise AuthException("Invalid auth type")
 
     try:
         return JWT.from_string(token)
     except InvalidJWT:
-        raise AuthException()
+        raise AuthException("Invalid token")

@@ -13,8 +13,14 @@ from opennote.db_model import User, RefreshToken
 from .jwt import JWT
 
 ACCESS_TOKEN_PREFIX = '/access-token'
-LOGIN_ROUTE_POSTFIX = '/login'
-LOGIN_ROUTE = ACCESS_TOKEN_PREFIX + LOGIN_ROUTE_POSTFIX
+LOGIN_AUTH_ROUTE = '/login'
+REFRESH_AUTH_ROUTE = '/refresh'
+LOGOUT_AUTH_ROUTE = '/logout'
+AUTH_ROUTES = [
+    ACCESS_TOKEN_PREFIX + LOGIN_AUTH_ROUTE,
+    ACCESS_TOKEN_PREFIX + REFRESH_AUTH_ROUTE,
+    ACCESS_TOKEN_PREFIX + LOGOUT_AUTH_ROUTE
+]
 
 bluprint_auth = Blueprint('access_token', __name__, url_prefix=ACCESS_TOKEN_PREFIX)
 bluprint_users = Blueprint('users', __name__, url_prefix='/users')
@@ -74,13 +80,9 @@ def whoami(jwt: JWT) -> tuple[UserResponse, int]:
     return UserResponse(username=user.username), 200
 
 
-@bluprint_auth.post(LOGIN_ROUTE_POSTFIX)
+@bluprint_auth.post(LOGIN_AUTH_ROUTE)
 @endpoint
 def create_token(body: AuthRequest) -> tuple[Union[AuthResponse, Response], int]:
-    """
-
-    :rtype: object
-    """
     user = db.session.query(User).filter_by(username=body.username).first()
     if not user:
         return Response(), 403
@@ -93,7 +95,7 @@ def create_token(body: AuthRequest) -> tuple[Union[AuthResponse, Response], int]
     return response, 201
 
 
-@bluprint_auth.post('/refresh')
+@bluprint_auth.post(REFRESH_AUTH_ROUTE)
 @endpoint
 def preform_token_refresh(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]:
     refresh_token = db.session.query(RefreshToken).get(jwt.refresh_token)
@@ -107,7 +109,7 @@ def preform_token_refresh(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]
     return response, 201
 
 
-@bluprint_auth.post('/logout')
+@bluprint_auth.post(LOGOUT_AUTH_ROUTE)
 @endpoint
 def delete_token(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]:
     refresh_token = db.session.query(RefreshToken).get(jwt.refresh_token)
@@ -121,8 +123,9 @@ def delete_token(jwt: JWT) -> tuple[Union[AuthResponse, Response], int]:
 def create_auth_response(token):
     body = AuthResponse(token_expire_at=token.expire_at)
     response = jsonify(body)
-    response.headers.add('Set-Cookie',
-                         f"Authorization=Bearer {token.serialize()}; HttpOnly; SameSite=Strict; Secure; Path=/; Expires={timestamp_to_cookie_expires_format(token.expire_at)}")
+    auth_cookie = (f"Authorization=Bearer {token.serialize()}; HttpOnly; SameSite=Strict; Secure; Path=/; "
+                   f"Expires={timestamp_to_cookie_expires_format(token.refresh_token_expire_at)}")
+    response.headers.add('Set-Cookie', auth_cookie)
     return response
 
 

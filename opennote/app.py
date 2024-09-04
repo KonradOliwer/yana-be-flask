@@ -2,7 +2,7 @@ import os
 import typing as t
 from os import environ
 
-from flask import Flask, request
+from flask import Flask
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from sqlalchemy import URL
@@ -43,7 +43,7 @@ def create_app(test_config: AppTestConfig = None) -> Flask:
     app.register_blueprint(auth.bluprint_users)
 
     if not (test_config and test_config.skip_auth):
-        app.before_request(creat_auth_filter(bypass_prefixes=[auth.LOGIN_ROUTE]))
+        app.before_request(creat_auth_filter(bypass_prefixes=auth.AUTH_ROUTES))
 
     register_error_handlers(app)
 

@@ -18,13 +18,16 @@ def endpoint(func):
 
     @wraps(func)
     def decorated_function(*args: any, **kwargs: any) -> tuple[Response, int]:
-        fun_kwargs = kwargs if "body" not in func.__annotations__ else kwargs | {
-            'body': func.__annotations__["body"](**request.get_json())}
-        try:
-            fun_kwargs = fun_kwargs if "jwt" not in func.__annotations__ else fun_kwargs | {
-                'jwt': extract_jwt_from_request()}
-        except AuthException:
-            pass
+        fun_kwargs = kwargs
+
+        if "body" in func.__annotations__:
+            fun_kwargs = fun_kwargs | {'body': func.__annotations__["body"](**request.get_json())}
+
+        if "jwt" in func.__annotations__:
+            try:
+                fun_kwargs = fun_kwargs | {'jwt': extract_jwt_from_request()}
+            except AuthException:
+                return Response(), 403
 
         result, status = func(*args, **fun_kwargs)
         if isinstance(result, Response):

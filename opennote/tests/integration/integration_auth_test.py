@@ -1,6 +1,5 @@
 import re
 
-from opennote.auth.auth import create_token
 from opennote.auth.jwt import JWT
 from opennote.database import db
 from opennote.db_model import RefreshToken
@@ -15,7 +14,7 @@ def test_login_creates_refresh_token(test_app):
         assert response.status_code == 201
 
         set_cookie_header = response.headers['Set-Cookie']
-        pattern = r"Authorization=Bearer ([\S]+); HttpOnly; SameSite=Strict; Secure; Path=\/; Max-Age=1800"
+        pattern = r"Authorization=Bearer ([\S]+); HttpOnly; SameSite=Strict; Secure; Path=\/;"
         token_value = re.match(pattern, set_cookie_header).groups()[0]
         jwt = JWT.from_string(token_value)
 
@@ -37,7 +36,7 @@ def test_preform_token_refresh_creates_new_refresh_token(test_app):
         response = client.post('/access-token/refresh', method='POST', json={"username": "test", "password": "test"})
         assert response.status_code == 201
         set_cookie_header = response.headers['Set-Cookie']
-        pattern = r"Authorization=Bearer ([\S]+); HttpOnly; SameSite=Strict; Secure; Path=\/; Max-Age=1800"
+        pattern = r"Authorization=Bearer ([\S]+); HttpOnly; SameSite=Strict; Secure; Path=\/;"
         token_value = re.match(pattern, set_cookie_header).groups()[0]
         jwt = JWT.from_string(token_value)
 

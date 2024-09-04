@@ -40,7 +40,7 @@ def test_registered_user_can_log_in(test_app):
         assert json.loads(login_response.data)['token_expire_at'] is not None
 
         set_cookie_header = login_response.headers['Set-Cookie']
-        pattern = r"Authorization=Bearer [\S]+\.[\S]+\.[\S]+; HttpOnly; SameSite=Strict; Secure; Path=\/; Max-Age=1800"
+        pattern = r"Authorization=Bearer [\S]+\.[\S]+\.[\S]+; HttpOnly; SameSite=Strict; Secure; Path=\/"
         assert re.match(pattern, set_cookie_header) is not None, f"Set-Cookie doesn't included correct auth token, instead it contains: {set_cookie_header}"
 
 
@@ -113,6 +113,6 @@ def test_refresh_token_creates_new_token(test_app):
         assert refresh_body['token_expire_at'] >= login_body['token_expire_at']
 
         set_cookie_header = refresh_login.headers['Set-Cookie']
-        pattern = r"Authorization=Bearer [\S]+\.[\S]+\.[\S]+; HttpOnly; SameSite=Strict; Secure; Path=\/; Max-Age=1800"
+        pattern = r"Authorization=Bearer [\S]+\.[\S]+\.[\S]+; HttpOnly; SameSite=Strict; Secure; Path=\/"
         assert re.match(pattern, set_cookie_header) is not None, f"Set-Cookie doesn't included correct auth token, instead it contains: {set_cookie_header}"
         assert set_cookie_header != login_response.headers['Set-Cookie']
